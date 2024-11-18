@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import useSound from "use-sound";
+import alarmsSound from "/audio/alarms.mp3";
 
 const CountdownTimer = () => {
   const INITIAL_TIME_WORK = 60 * 25;
@@ -10,6 +12,9 @@ const CountdownTimer = () => {
   const [timeRemaining, setTimeRemaining] = useState(INITIAL_TIME_WORK);
   const [phase, setPhase] = useState("work");
   const [round, setRound] = useState(1);
+  const [playAlarms, { stop }] = useSound(alarmsSound, {
+    loop: true,
+  });
 
   useEffect(() => {
     let intervalId = null;
@@ -17,7 +22,20 @@ const CountdownTimer = () => {
     if (isTimerRunning) {
       intervalId = setInterval(() => {
         if (timeRemaining === 0) {
-          alert("Time's Complete!");
+          Swal.fire({
+            confirmButtonColor: "#d33",
+            confirmButtonText: "Okay",
+            icon: "success",
+            text: "Time's Complete!",
+            allowOutsideClick: false,
+          }).then((result) => {
+            if (result.isConfirmed) {
+              stop();
+            }
+          });
+
+          playAlarms();
+
           if (phase === "work" && round < 4) {
             setPhase("break");
             setTimeRemaining(INITIAL_TIME_BREAK);
@@ -55,6 +73,7 @@ const CountdownTimer = () => {
         showCancelButton: true,
         confirmButtonColor: "#d33",
         confirmButtonText: "Yes",
+
         reverseButtons: true,
       }).then((result) => {
         if (result.isConfirmed) {
